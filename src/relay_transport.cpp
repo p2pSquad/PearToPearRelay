@@ -6,7 +6,7 @@
 namespace pear::relay {
 
 RelayTransport::RelayTransport(std::string relay_address, std::string repo_id, std::string token)
-    : relay_address_(std::move(relay_address)), repo_id_(std::move(repo_id)), token_(std::move(token)) {}
+    : relay_address_(std::move(relay_address)), repo_id_(std::move(repo_id)), token_(std::move(token)), client_(relay_address_) {}
 
 const std::string& RelayTransport::relayAddress() const {
     return relay_address_;
@@ -18,6 +18,10 @@ const std::string& RelayTransport::repoId() const {
 
 const std::string& RelayTransport::token() const {
     return token_;
+}
+
+std::string RelayTransport::ping(const std::string& message) {
+    return client_.ping(message);
 }
 
 uint64_t RelayTransport::registerDevice(const std::string& master_ref, const std::string& self_ref) {

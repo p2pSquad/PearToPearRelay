@@ -6,6 +6,7 @@
 #include <vector>
 
 #include <pear/net/pear_transport.hpp>
+#include <pear/relay/relay_client.hpp>
 
 namespace pear::relay {
 
@@ -17,6 +18,8 @@ public:
     const std::string& repoId() const;
     const std::string& token() const;
 
+    std::string ping(const std::string& message);
+
     uint64_t registerDevice(const std::string& master_ref, const std::string& self_ref) override;
     std::vector<pear::net::WalEntryInfo> updateDB(const std::string& master_ref, uint64_t last_seq_id, uint64_t device_id) override;
     bool pushWAL(const std::string& master_ref, uint64_t device_id, const std::vector<pear::net::WalEntryInfo>& entries, std::vector<uint64_t>& out_assigned_seq_ids) override;
@@ -26,6 +29,7 @@ private:
     std::string relay_address_;
     std::string repo_id_;
     std::string token_;
+    RelayClient client_;
 };
 
 } // namespace pear::relay
