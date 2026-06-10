@@ -226,6 +226,16 @@ grpc::Status RelayService::RegisterDevice(grpc::ServerContext* /*ctx*/, const pr
         devices.push_back(DeviceRecord{assigned_device_id, req->self_ref()});
         writeDevices(path, devices);
 
+        auto wal_entries = readWal(path);
+        proto::WalEntry device_entry;
+        device_entry.set_seq_id(lastSeqId(wal_entries) + 1);
+        device_entry.set_timestamp(0);
+        device_entry.set_op_type(proto::WalOpType::DEVICE_UPDATE);
+        auto* device_update = device_entry.mutable_device_update();
+        device_update->set_device_id(assigned_device_id);
+        device_update->set_address(req->self_ref());
+        appendWal(path, device_entry);
+
         resp->set_success(true);
         resp->set_assigned_device_id(assigned_device_id);
 

@@ -22,6 +22,7 @@ FetchContent_MakeAvailable(PearToPear)
 
 find_package(Protobuf REQUIRED)
 find_package(PkgConfig REQUIRED)
+find_package(Qt5 REQUIRED COMPONENTS Widgets)
 
 pkg_check_modules(GRPC REQUIRED IMPORTED_TARGET grpc++)
 find_program(GRPC_CPP_PLUGIN grpc_cpp_plugin REQUIRED)
@@ -99,4 +100,41 @@ add_executable(pear_relay_demo
 
 target_link_libraries(pear_relay_demo PRIVATE
     pear_relay
+)
+
+
+set(PEAR_CLI_SOURCES
+    ${peartopear_SOURCE_DIR}/src/pear/cli/commands.cpp
+    ${peartopear_SOURCE_DIR}/src/pear/cli/command_utils.cpp
+    ${peartopear_SOURCE_DIR}/src/pear/cli/sync.cpp
+    ${peartopear_SOURCE_DIR}/src/pear/cli/object_download.cpp
+    ${peartopear_SOURCE_DIR}/src/pear/cli/output.cpp
+    ${peartopear_SOURCE_DIR}/src/pear/cli/json_output.cpp
+    ${peartopear_SOURCE_DIR}/src/pear/cli/status.cpp
+    ${peartopear_SOURCE_DIR}/src/pear/cli/logger.cpp
+)
+
+add_executable(pear_photo_gallery
+    apps/photo_gallery/main.cpp
+    apps/photo_gallery/photo_controller.cpp
+    apps/photo_gallery/login_window.cpp
+    apps/photo_gallery/gallery_window.cpp
+    ${PEAR_CLI_SOURCES}
+)
+
+target_include_directories(pear_photo_gallery PRIVATE
+    ${peartopear_SOURCE_DIR}/src/pear/cli
+    ${peartopear_SOURCE_DIR}/include
+)
+
+target_compile_definitions(pear_photo_gallery PRIVATE PEAR_RELAY_ASSET_DIR="${CMAKE_CURRENT_SOURCE_DIR}/assets")
+
+target_link_libraries(pear_photo_gallery PRIVATE
+    pear_relay
+    pear_db
+    pear_fs
+    pear_net
+    pear_demon
+    Qt5::Widgets
+    nlohmann_json::nlohmann_json
 )
