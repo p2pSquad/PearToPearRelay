@@ -4,6 +4,20 @@ package pear.relay.proto;
 
 service RelayService {
     rpc Ping(PingRequest) returns (PingResponse);
+    rpc RegisterDevice(RegisterDeviceRequest) returns (RegisterDeviceResponse);
+    rpc UpdateDB(UpdateDBRequest) returns (UpdateDBResponse);
+    rpc PushWAL(PushWALRequest) returns (PushWALResponse);
+    rpc UploadObject(UploadObjectRequest) returns (UploadObjectResponse);
+    rpc GetObjectSize(ObjectInfoRequest) returns (ObjectInfoResponse);
+    rpc DownloadObject(DownloadObjectRequest) returns (DownloadObjectResponse);
+    rpc DownloadObjectRange(DownloadObjectRangeRequest) returns (DownloadObjectRangeResponse);
+    rpc DeleteObject(DeleteObjectRequest) returns (DeleteObjectResponse);
+    rpc ListFiles(ListFilesRequest) returns (ListFilesResponse);
+}
+
+message Auth {
+    string repo_id = 1;
+    string token = 2;
 }
 
 message PingRequest {
@@ -12,4 +26,166 @@ message PingRequest {
 
 message PingResponse {
     string message = 1;
+}
+
+message RegisterDeviceRequest {
+    Auth auth = 1;
+    string self_ref = 2;
+}
+
+message RegisterDeviceResponse {
+    bool success = 1;
+    uint64 assigned_device_id = 2;
+    repeated WalEntry full_wal = 3;
+    string error_message = 4;
+}
+
+message UpdateDBRequest {
+    Auth auth = 1;
+    uint64 last_seq_id = 2;
+    uint64 device_id = 3;
+}
+
+message UpdateDBResponse {
+    bool success = 1;
+    repeated WalEntry entries = 2;
+    string error_message = 3;
+}
+
+message PushWALRequest {
+    Auth auth = 1;
+    uint64 device_id = 2;
+    repeated WalEntry entries = 3;
+}
+
+message PushWALResponse {
+    bool success = 1;
+    repeated uint64 assigned_seq_ids = 2;
+    string error_message = 3;
+}
+
+message UploadObjectRequest {
+    Auth auth = 1;
+    string object_hash = 2;
+    bytes data = 3;
+}
+
+message UploadObjectResponse {
+    bool success = 1;
+    string error_message = 2;
+}
+
+message ObjectInfoRequest {
+    Auth auth = 1;
+    string object_hash = 2;
+    uint64 requester_device_id = 3;
+}
+
+message ObjectInfoResponse {
+    bool success = 1;
+    uint64 size = 2;
+    string error_message = 3;
+}
+
+message DownloadObjectRequest {
+    Auth auth = 1;
+    string object_hash = 2;
+    uint64 requester_device_id = 3;
+}
+
+message DownloadObjectResponse {
+    bool success = 1;
+    bytes data = 2;
+    string error_message = 3;
+}
+
+message DownloadObjectRangeRequest {
+    Auth auth = 1;
+    string object_hash = 2;
+    uint64 requester_device_id = 3;
+    uint64 offset = 4;
+    uint64 size = 5;
+}
+
+message DownloadObjectRangeResponse {
+    bool success = 1;
+    bytes data = 2;
+    string error_message = 3;
+}
+
+message DeleteObjectRequest {
+    Auth auth = 1;
+    string object_hash = 2;
+    uint64 requester_device_id = 3;
+}
+
+message DeleteObjectResponse {
+    bool success = 1;
+    bool busy = 2;
+    string error_message = 3;
+}
+
+message ListFilesRequest {
+    Auth auth = 1;
+}
+
+message ListFilesResponse {
+    bool success = 1;
+    repeated FileRecord files = 2;
+    string error_message = 3;
+}
+
+enum WalOpType {
+    FILE_UPDATE = 0;
+    DEVICE_UPDATE = 1;
+    FILE_DELETE = 2;
+    OBJECT_OWNER_UPDATE = 3;
+    OBJECT_OWNER_DELETE = 4;
+}
+
+message FileUpdate {
+    string path = 1;
+    string object_hash = 2;
+    uint64 version = 3;
+    uint64 owner_device_id = 4;
+    bool read_only = 5;
+}
+
+message FileDelete {
+    string path = 1;
+    uint64 version = 2;
+    uint64 owner_device_id = 3;
+}
+
+message DeviceUpdate {
+    uint64 device_id = 1;
+    string address = 2;
+}
+
+message ObjectOwnerUpdate {
+    string object_hash = 1;
+    uint64 owner_device_id = 2;
+}
+
+message WalEntry {
+    uint64 seq_id = 1;
+    uint64 timestamp = 2;
+    WalOpType op_type = 3;
+
+    oneof data {
+        FileUpdate file_update = 4;
+        DeviceUpdate device_update = 5;
+        FileDelete file_delete = 6;
+        ObjectOwnerUpdate object_owner_update = 7;
+        ObjectOwnerUpdate object_owner_delete = 8;
+    }
+}
+
+message FileRecord {
+    string path = 1;
+    string object_hash = 2;
+    uint64 version = 3;
+    uint64 owner_device_id = 4;
+    bool read_only = 5;
+    bool downloaded = 6;
 }

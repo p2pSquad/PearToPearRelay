@@ -15,7 +15,7 @@ set(PEAR_BUILD_TESTS OFF CACHE BOOL "" FORCE)
 FetchContent_Declare(
     PearToPear
     GIT_REPOSITORY https://github.com/p2pSquad/PearToPear.git
-    GIT_TAG feature/transport-abstraction
+    GIT_TAG main
 )
 
 FetchContent_MakeAvailable(PearToPear)

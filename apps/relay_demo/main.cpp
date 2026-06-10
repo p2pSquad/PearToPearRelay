@@ -3,6 +3,7 @@
 #include <exception>
 #include <iostream>
 #include <string>
+#include <vector>
 
 int main(int argc, char** argv) {
     const std::string relay_address = argc > 1 ? argv[1] : "127.0.0.1:50051";
@@ -16,6 +17,15 @@ int main(int argc, char** argv) {
         std::cout << "relay: " << transport.relayAddress() << "\n";
         std::cout << "repo: " << transport.repoId() << "\n";
         std::cout << transport.ping("hello") << "\n";
+
+        const uint64_t device_id = transport.registerDevice("", "relay-demo-client");
+        std::cout << "registered device: " << device_id << "\n";
+
+        const auto entries = transport.updateDB("", 0, device_id);
+        std::cout << "wal entries: " << entries.size() << "\n";
+
+        const auto files = transport.listFiles();
+        std::cout << "files: " << files.size() << "\n";
     } catch (const std::exception& exception) {
         std::cerr << "relay demo failed: " << exception.what() << "\n";
         return 1;
